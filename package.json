@@ -1,0 +1,25 @@
+{
+    "name": "unsplash",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "express": "node ./bin/www",
+        "dev": "echo 'run dev' & npm run express",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "./node_modules/nodemon/bin/nodemon.js --config nodemon.json --exec npm run dev "
+    },
+    "dependencies": {
+        "cookie-parser": "~1.4.4",
+        "debug": "~2.6.9",
+        "express": "~4.16.1",
+        "http-errors": "~1.6.3",
+        "morgan": "~1.9.1",
+        "pug": "^2.0.3",
+        "stylus": "0.54.5"
+    },
+    "devDependencies": {
+        "browser-sync": "^2.26.5",
+        "connect-browser-sync": "^2.1.0",
+        "nodemon": "^1.19.1"
+    }
+}
