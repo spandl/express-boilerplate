@@ -6,8 +6,12 @@ a {
   color: #00b7ff;
 }
 html {
-  background-color: #d3d3d3;
+  background-color: #f5f5dc;
+  color: #ccc;
 }
 .done {
-  color: #d3d3d3;
+  color: #123;
+}
+.test {
+  color: rgba(51,51,51,0.067);
 }

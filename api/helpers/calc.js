@@ -1,6 +1,6 @@
 class CalcHelper {
     static calc() {
-        const value = 4 * Math.PI;
+        const value = 1;
         return value;
     }
 }

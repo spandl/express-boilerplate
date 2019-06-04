@@ -1,5 +1,0 @@
-{
-    "watch": ["routes", "helpers"],
-    "ext": "js",
-    "ignore": ["*.test.ts"]
-  }

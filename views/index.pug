@@ -2,27 +2,25 @@ extends layout
 
 block content
   h1= title
-  p Welcome to #{title}
+  p Welcome to #{title} 
 
-  h2 I want ...
+  h2 I want ... TEST 933 (#{data}) ...TEST 2
     ul
         li.done Using stylus
         li.done Using Pug
         li.done Compile Pug
         li.done Compile CSS
-        li Live refresh Changes
-        li Compile JS
-        li Use Babel and ES6
-        li Linting with severe rules
-        li Lint on save
-        li Use Babel for node code
+        li.done Live refresh Changes
+        li Compile JS with webpack
+        li Use Babel for front-end JS
+        li.done Use Babel and ES6 for node
+        li.done Linting with severe rules
+        li.done Lint on save
         ul
-                li For production
-                li For development
-        li.done  Clean CSS and JS output for production
+                li.done For production
+                li.done For development
+        li  Clean CSS and JS output for production
             ul
-                li.done CSS
-                li JS
-                li.done  Assets, like fonts and images 
-
-        li Do I need this? Copy Functions in external js file and import!!
+                li CSS
+                li JS (see above)
+                li  Assets, like fonts and images - They just stay where they are

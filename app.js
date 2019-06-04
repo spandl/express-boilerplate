@@ -1,25 +1,17 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var stylus = require('stylus');
+/* eslint-disable */
+let createError = require('http-errors');
+let express = require('express');
+let path = require('path');
+let cookieParser = require('cookie-parser');
+let logger = require('morgan');
+let stylus = require('stylus');
 
-var indexRouter = require('./routes/index');
-var downloadUnsplashData = require('./routes/download');
-var usersRouter = require('./routes/users');
-var birds = require('./routes/birds')
+let indexRouter = require('./api/routes/index');
+let downloadUnsplashData = require('./api/routes/download');
+let usersRouter = require('./api/routes/users');
+let birds = require('./api/routes/birds');
 
-
-
-
-var app = express(); 
-
-if (app.get('env') === 'development') {
-  var browserSync = require('browser-sync');
-  var bs = browserSync.create().init({ logSnippet: false });
-  app.use(require('connect-browser-sync')(bs, { injectHead: true }));
-}
+let app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,20 +22,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(stylus.middleware(path.join(__dirname, 'public')));
+
+// Trying the middle ware
+// if (app.get('env') === 'development') {
+  // Will add this probbaly later to hide in production
+// }
+// const webpack = require('webpack');
+// const webpackConfig = require('./config/webpack.dev.js');
+// var compiler = webpack(webpackConfig);
+
+// app.use(require("webpack-dev-middleware")(compiler, {
+//     noInfo: true, publicPath: webpackConfig.output.publicPath
+// }));
+
+// app.use(require("webpack-hot-middleware")(compiler));
+
+// Trying the middle ware END
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/download', downloadUnsplashData);
-app.use('/birds', birds)
+app.use('/birds', birds);
 app.use('/users', usersRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

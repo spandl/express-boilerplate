@@ -1,0 +1,5 @@
+{
+    "watch": ["api", "views", "config", "public"],
+    "ext": "js, styl, pug",
+    "ignore": ["*.test.ts"]
+  }
