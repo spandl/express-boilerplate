@@ -1,11 +1,10 @@
 const express = require('express');
 
 const router = express.Router();
-
 const unsplashHelper = require('../helpers/unsplash');
 
 router.get('/', (req, res, next) => {
-    res.render('download', { title: 'Download Data from Unsplash', data: unsplashHelper.getData() }, (err, html) => {
+    res.render('download', { title: 'Download Data from Unsplash', data: unsplashHelper.getPhotoInfoFromFileList() }, (err, html) => {
         if (err) {
             next(err);
         } else {

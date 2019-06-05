@@ -24,5 +24,7 @@ module.exports = {
     ],
     'no-console': 'off',
     'func-names': ['error', 'as-needed'],
+    'no-undef':'off',
+    'no-param-reassign':'off'
   },
 };

@@ -13,17 +13,16 @@
  |
  */
 module.exports = {
-    // 'no-open': true,
-    // 'no-notify': true,
     ui: {
         port: 3002,
     },
-    files: ['views', 'public', 'api'],
+    files: ['views', 'api'],
     watchEvents: [
         'change',
     ],
     watch: true,
     ignore: [],
+    open: false,
     single: false,
     watchOptions: {
         ignoreInitial: false,
