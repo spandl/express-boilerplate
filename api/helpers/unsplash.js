@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+const fs = require('fs');
 require('isomorphic-fetch');
 const path = require('path');
 const axios = require('axios');
@@ -6,11 +7,15 @@ const dotenv = require('dotenv');
 const Unsplash = require('unsplash-js').default;
 const { toJson } = require('unsplash-js');
 const jsonfile = require('jsonfile');
-const fs = require('fs');
+
+const palette = require('image-palette');
+const pixels = require('image-pixels');
 
 const folder = path.join(__dirname, '../..', 'data/');
 const fileNameStub = 'test-';
 const requestURL = 'https://api.unsplash.com/';
+
+const maxData = 2;
 
 dotenv.config();
 
@@ -25,19 +30,104 @@ const unsplash = new Unsplash({
 const maxLoop = 0;
 
 class UnsplashHelper {
-    static reducePhotoJSON() {
+    static async createColorPalettes() {
+        // Get download link for all images
+        const ImageList = await jsonfile.readFile(`${folder}unsplash-d3.json`);
+
+        // Download small version of all available photos
+        const promises = [];
+
+        ImageList.forEach((file) => {
+            const imageURL = `${
+                file.urls.raw
+            }&w=200&h=200&fit=crop&q=85&fm=jpg&crop=entropy&cs=srgb`;
+            const fileDestination = `${folder}download/file-${file.id}.jpg`;
+            promises.push(
+                this.downloadImage(imageURL, fileDestination).then((img) => {
+                    // console.log(`Image ${img} downloaded`);
+                }).catch((err) => {
+                    console.log(`download error: ${err}`);
+                }),
+            );
+        });
+
+        await Promise.all(promises);
+        console.log('Image download completed');
+
+        // Extract color palettes
+        const colorPalette = [];
+        const palettePromises = [];
+        // create second promise array and wait for all, then write json file.
+        ImageList.forEach((file, index) => {
+            const fileName = `${folder}download/file-${file.id}.jpg`;
+            colorPalette[index] = {};
+            colorPalette[index].id = file.id;
+            colorPalette[index].colors = {};
+            palettePromises.push(
+                this.getColorPaletteFromImage(fileName, 5).then((palettte) => {
+                    colorPalette[index].colors.palette = palettte;
+                    // console.log(`Palette ${index} created`);
+                }).catch((err) => {
+                    console.log(`Palette error: ${err} // ${index}`);
+                }),
+                this.getColorPaletteFromImage(fileName, 2).then((color) => {
+                    colorPalette[index].colors.main = color;
+                    // console.log(`Color ${index} created`);
+                }).catch((err) => {
+                    console.log(`Palette Color error: ${err} // ${index}`);
+                }),
+            );
+        });
+
+        await Promise.all(palettePromises);
+        console.log('All Palettes created');
+
+        jsonfile.writeFile(`${folder}unsplash-colors.json`, colorPalette, (err) => {
+            if (err) console.error(err);
+            console.log('DONE!!!');
+        });
+    }
+
+    static async getColorPaletteFromImage(file, num) {
+        const { colors } = palette(await pixels(file), num);
+
+        return new Promise((resolve) => {
+            resolve(colors);
+        });
+    }
+
+    static async downloadImage(url, dest) {
+        const writer = fs.createWriteStream(dest);
+
+        const response = await axios({
+            url,
+            method: 'GET',
+            responseType: 'stream',
+        });
+
+        response.data.pipe(writer);
+
+        return new Promise((resolve, reject) => {
+            writer.on('finish', resolve(dest));
+            writer.on('error', reject);
+        });
+    }
+
+    static reducePhotoJSON(type) {
         this.readFileNames('photos/').then((array) => {
             // Make sure only valid files are processed
             const result = array.filter(filename => filename.includes(fileNameStub));
             const promises = [];
             const photoJSON = [];
 
-            result.forEach((file) => {
-                promises.push(
-                    this.reduceJSON(`${folder}photos/${file}`).then((obj) => {
-                        photoJSON.push(obj);
-                    }),
-                );
+            result.forEach((file, index) => {
+                if (index < maxData) {
+                    promises.push(
+                        this.reduceJSON(`${folder}photos/${file}`, type).then((obj) => {
+                            photoJSON.push(obj);
+                        }),
+                    );
+                }
             });
 
             Promise.all(promises).then(() => {
@@ -49,7 +139,7 @@ class UnsplashHelper {
         });
     }
 
-    static reduceJSON(theFile) {
+    static reduceJSON(theFile, type) {
         return new Promise((resolve, reject) => {
             jsonfile
                 .readFile(theFile)
@@ -57,31 +147,39 @@ class UnsplashHelper {
                     // Do your work of copying only nodes that are required
                     const reducedJSON = {};
 
+                    // Generic Data
                     reducedJSON.id = obj.id;
-                    reducedJSON.created_at = obj.created_at;
-                    reducedJSON.updated_at = obj.updated_at;
-                    reducedJSON.width = obj.width;
-                    reducedJSON.height = obj.height;
-                    reducedJSON.color = obj.color;
-                    reducedJSON.description = obj.description;
-                    reducedJSON.urls = obj.urls;
-                    reducedJSON.exif = obj.exif;
-                    reducedJSON.location = obj.location;
-                    reducedJSON.tags = obj.tags;
-                    reducedJSON.sponsored = obj.sponsored;
-                    reducedJSON.sponsored_by = obj.sponsored_by;
-                    reducedJSON.sponsored_impressions_id = obj.sponsored_impressions_id;
-                    reducedJSON.likes = obj.likes;
-                    reducedJSON.views = obj.views;
-                    reducedJSON.downloads = obj.downloads;
+                    reducedJSON.urls = {};
+                    reducedJSON.urls.raw = obj.urls.raw;
 
-                    // User data
-                    reducedJSON.user = {};
-                    reducedJSON.user.id = obj.user.id;
-                    reducedJSON.user.username = obj.user.username;
-                    reducedJSON.user.first_name = obj.user.first_name;
-                    reducedJSON.user.last_name = obj.user.last_name;
-                    reducedJSON.user.location = obj.user.location;
+                    if (type === 'color' || type === 'all') {
+                        reducedJSON.created_at = obj.created_at;
+                        reducedJSON.color = obj.color;
+
+                        // User data
+                        reducedJSON.user = {};
+                        reducedJSON.user.id = obj.user.id;
+                        reducedJSON.user.username = obj.user.username;
+                        reducedJSON.user.first_name = obj.user.first_name;
+                        reducedJSON.user.last_name = obj.user.last_name;
+                    }
+                    // Detailed data
+                    if (type === 'all') {
+                        reducedJSON.user.location = obj.user.location;
+                        reducedJSON.width = obj.width;
+                        reducedJSON.height = obj.height;
+                        reducedJSON.updated_at = obj.updated_at;
+                        reducedJSON.description = obj.description;
+                        reducedJSON.exif = obj.exif;
+                        reducedJSON.location = obj.location;
+                        reducedJSON.tags = obj.tags;
+                        reducedJSON.sponsored = obj.sponsored;
+                        reducedJSON.sponsored_by = obj.sponsored_by;
+                        reducedJSON.sponsored_impressions_id = obj.sponsored_impressions_id;
+                        reducedJSON.likes = obj.likes;
+                        reducedJSON.views = obj.views;
+                        reducedJSON.downloads = obj.downloads;
+                    }
 
                     resolve(reducedJSON);
                 })

@@ -29,7 +29,15 @@ router.get('/getPhotoInfoFromFileList', (req, res) => {
 });
 
 router.get('/reducePhotoJSON', (req, res) => {
-    res.render('download', { title: 'Reduce all Photo JSON files to one JSON', data: unsplashHelper.reducePhotoJSON() });
+    res.render('download', { title: 'Reduce all Photo JSON files to one JSON', data: unsplashHelper.reducePhotoJSON('all') });
+});
+
+router.get('/reducePhotoJSON/color', (req, res) => {
+    res.render('download', { title: 'Reduce all Photo JSON files to one JSON - for Color viz only', data: unsplashHelper.reducePhotoJSON('color') });
+});
+
+router.get('/reducePhotoJSON/getColorPalettes', (req, res) => {
+    res.render('download', { title: 'Reduce all Photo JSON files to one JSON - for Color viz only', data: unsplashHelper.createColorPalettes() });
 });
 
 router.get('/getRandomPhotoJson', (req, res) => {
